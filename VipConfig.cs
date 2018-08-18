@@ -18,13 +18,14 @@ namespace StrategyPattern
             //这里将配置硬编码到字典中，实际可以从配置文件中读取
             VipCondition = new Dictionary<Vip, int> { { Vip.普通会员, 1000 * 100 }, { Vip.黄金会员, 3000 * 100 }, { Vip.钻石会员, 5000 * 100 } };
             VipAlgorithm = Assembly.GetExecutingAssembly().GetExportedTypes()
-                        .Select(t => new
-                        {
-                            Type = t,
-                            Vip = t.GetCustomAttribute<VipAttribute>()?.Vip
-                        })
-                        .Where(x => x.Vip != null)
-                        .ToDictionary(x => x.Vip.Value, x => (IVipAlgorithm)Activator.CreateInstance(x.Type));
+                .Where(t => t.GetInterfaces().Contains(typeof(IVipAlgorithm)))
+                .Select(t => new
+                {
+                    Type = t,
+                    Vip = t.GetCustomAttribute<VipAttribute>()?.Vip
+                })
+                .Where(x => x.Vip != null)
+                .ToDictionary(x => x.Vip.Value, x => (IVipAlgorithm)Activator.CreateInstance(x.Type));
         }
         public static VipConfig Instance
         {
